@@ -1,0 +1,65 @@
+import json
+import random
+from telegram.ext import Updater, CommandHandler
+
+# Load card data from the JSON file
+file_path = r'C:\Users\м\OneDrive\Рабочий стол\Python_ex\tae_bot\tae_cards.json'  # Corrected file extension
+with open(file_path, 'r', encoding='utf-8') as file:
+    card_data = json.load(file)
+
+def draw_card(update, context):
+    # Get a random card ID from the loaded JSON data
+    random_card_id = random.choice(list(card_data.keys()))
+    random_card = card_data[random_card_id]
+
+    # Extract card details
+    card_name = random_card['card_name']
+    card_meaning = random_card['card_meaning']
+    card_img = random_card['card_img']
+    card_url = random_card['card_url']
+
+    # Prepare the message with card details
+    message = f"Card of the day: {card_name}\nMeaning: {card_meaning}\nCard Image: {card_img}\nMore Info: {card_url}"
+    
+    # Send the message to the chat
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+
+def start(update, context):
+    # Define available buttons and their descriptions
+    buttons = [
+        {'text': '/drawcard', 'description': 'Get the card of the day'},
+        # Add more buttons with descriptions here
+        {'text': '/help', 'description': 'Get help or instructions'}
+    ]
+
+    # Prepare the message with button descriptions
+    message = "Welcome! Choose an option below:\n\n"
+    for btn in buttons:
+        message += f"{btn['text']}: {btn['description']}\n"
+
+    # Send the message with buttons
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+
+def main():
+    print("Starting the bot...")  # Added print statement
+    
+    # Initialize the bot with your Telegram bot token
+    updater = Updater(token='YOUR_API_TOKEN', use_context=True)  # Replace with your actual API token
+    dispatcher = updater.dispatcher
+
+    # Handler for the /drawcard command
+    drawcard_handler = CommandHandler('drawcard', draw_card)
+    dispatcher.add_handler(drawcard_handler)
+
+    # Handler for the /start command
+    start_handler = CommandHandler('start', start)
+    dispatcher.add_handler(start_handler)
+
+    # Start polling for updates
+    updater.start_polling()
+
+    # Run the bot until Ctrl+C is pressed or another termination signal is received
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
